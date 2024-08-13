@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Idle Game</title>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: 'Arial', sans-serif;
+            color: #555; /* Более серый цвет текста */
+        }
+        #game {
+            background-color: #ffffff;
+            border-radius: 10px;
+            padding: 40px;
+            width: 350px;
+            height: 700px; /* Увеличиваем высоту */
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+        h1, h2, p {
+            font-size: 22px;
+            margin: 10px 0;
+            font-weight: bold; /* Делаем шрифт жирным */
+        }
+        button {
+            margin: 5px;
+            padding: 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            background-color: #28a745; /* Зеленый цвет кнопок */
+            color: white;
+            font-size: 16px;
+            font-weight: bold; /* Делаем шрифт жирным у кнопок */
+        }
+        button:hover {
+            background-color: #218838; /* Темно-зеленый цвет при наведении */
+        }
+        /* Светлая тема */
+        body {
+            background: linear-gradient(135deg, #a8caba, #3b6978);
+        }
+        /* Темная тема */
+        body.dark-theme {
+            background: linear-gradient(135deg, #4a4a4a, #1c1c1c);
+            color: #ddd;
+        }
+        #game.dark-theme {
+            background-color: #444;
+            box-shadow: 0 4px 20px rgba(255, 255, 255, 0.2);
+        }
+        button.dark-theme {
+            background-color: #28a745; /* Зеленый цвет для темной темы */
+            color: white;
+        }
+        #themeButton {
+            background-color: #ff69b4; /* Цвет кнопки для смены темы */
+        }
+    </style>
+</head>
+<body>
+    <div id="game">
+        <h1>Idle Game</h1>
+        <p id="score">Очки: 0</p>
+        <button id="earnButton">Заработать очки</button><br/><br/>
+
+        <h2>Улучшения</h2>
+        <button id="upgradeButton" disabled>Купить улучшение за <span id="upgradeCost">10</span> очков</button><br/>
+        <button id="increaseIncomeButton" disabled>Увеличить пассивный доход за <span id="incomeIncreaseCost">30</span> очков</button><br/>
+        <button id="reduceCostsButton" disabled>Снизить стоимость улучшений за <span id="costReduction">100</span> очков</button><br/><br/>
+
+        <p>Множитель дохода: <span id="multiplier">1</span></p>
+        <p>Пассивный доход: <span id="passiveIncome">1</span> очков/секунда</p><br/>
+
+        <button id="themeButton">Сменить цветовую гамму</button><br/>
+    </div>
+
+    <script>
+        let score = 0;
+        let passiveIncome = 1; // Базовый пассивный доход равен 1
+        let upgradeCost = 10;
+        let incomeIncreaseCost = 30;
+        let costReductionAmount = 100;
+        let multiplier = 1;
+
+        const scoreDisplay = document.getElementById('score');
+        const upgradeButton = document.getElementById('upgradeButton');
+        const incomeIncreaseButton = document.getElementById('increaseIncomeButton');
+        const reduceCostsButton = document.getElementById('reduceCostsButton');
+        const multiplierDisplay = document.getElementById('multiplier');
+        const passiveIncomeDisplay = document.getElementById('passiveIncome');
+        const themeButton = document.getElementById('themeButton');
+
+        document.getElementById('earnButton').onclick = function () {
+            score += 1 * multiplier;
+            updateScore();
+        };
+
+        upgradeButton.onclick = function () {
+            if (score >= upgradeCost) {
+                score -= upgradeCost;
+                multiplier += 1;
+                upgradeCost = Math.floor(upgradeCost * 1.5); // Увеличение на 50%
+                updateScore();
+            }
+            updateButtons();
+        };
+
+        incomeIncreaseButton.onclick = function () {
+            if (score >= incomeIncreaseCost) {
+                score -= incomeIncreaseCost;
+                passiveIncome += 1;
+                incomeIncreaseCost = Math.floor(incomeIncreaseCost * 1.5); // Увеличение на 50%
+                updateScore();
+            }
+            updateButtons();
+        };
+
+        reduceCostsButton.onclick = function () {
+            if (score >= costReductionAmount) {
+                score -= costReductionAmount;
+                upgradeCost = Math.max(10, Math.floor(upgradeCost * 0.8)); // Снижение на 20%
+                incomeIncreaseCost = Math.max(30, Math.floor(incomeIncreaseCost * 0.8)); // Снижение на 20%
+                costReductionAmount = Math.max(100, Math.floor(costReductionAmount * 0.8)); // Снижение на 20%
+                updateScore();
+            }
+            updateButtons();
+        };
+
+        function updateScore() {
+            scoreDisplay.innerText = `Очки: ${score}`;
+            multiplierDisplay.innerText = multiplier;
+            passiveIncomeDisplay.innerText = passiveIncome;
+            updateButtons();
+        }
+
+        function updateButtons() {
+            upgradeButton.disabled = score < upgradeCost;
+            incomeIncreaseButton.disabled = score < incomeIncreaseCost;
+            reduceCostsButton.disabled = score < costReductionAmount;
+
+            document.getElementById('upgradeCost').innerText = upgradeCost;
+            document.getElementById('incomeIncreaseCost').innerText = incomeIncreaseCost;
+            document.getElementById('costReduction').innerText = costReductionAmount;
+        }
+
+        setInterval(() => {
+            score += passiveIncome;
+            updateScore();
+        }, 1000); // Обновляем очки каждую секунду
+
+        themeButton.onclick = function() {
+            const body = document.body;
+            const game = document.getElementById('game');
+            const buttons = [upgradeButton, incomeIncreaseButton, reduceCostsButton, themeButton];
+            body.classList.toggle('dark-theme');
+            game.classList.toggle('dark-theme');
+            buttons.forEach(button => {
+                button.classList.toggle('dark-theme');
+            });
+        };
+    </script>
+</body>
+</html>
